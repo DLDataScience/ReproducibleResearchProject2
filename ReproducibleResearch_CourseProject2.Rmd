@@ -1,5 +1,5 @@
 ---
-title: "Reproducible Research – Course Project 2"
+title: "Comparative Impact of Weather Events on Indicators of Human and Economic Health"
 author: "David Levy"
 date: "11/18/2020"
 output: html_document
@@ -11,16 +11,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Synopsis
 
-This analysis makes use of the NOAA storm Database and attempts to answer some basic questions about severe weather events. More specifically, we are seeking answers to the following questions
+This analysis makes use of the NOAA Storm Database and attempts to answer some basic questions about severe weather events. More specifically, we are seeking answers to the following:
+
+
+**Research Questions:**
 
 1. *Across the United States, which types of events (as indicated in the \color{red}{\verb|EVTYPE|}`EVTYPE` variable) are most harmful with respect to population health?*
 
 2. *Across the United States, which types of events have the greatest economic consequences?*
 
 
+In order to answer these questions, we begin by importing the NOAA Storm Database and vizualizing its contents. We proceed to outline which variables we intend to utilize and which are not helpful in addressing the research questions posed above. Next, we provide R code demonstrating out data paring and transformation process, and proceed to our analysis and results.
 
-Title: Your document should have a title that briefly summarizes your data analysis
-Synopsis: Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.
+The analysis conducted here is brief, but informative. We group and summarize data by event type with injuries and fatalities as variables of interest in assessing the effect of various types of weather events on population health (Research Question 1). Next, we group and summarize data by event type with property damage and crop damage as variables of interest in assessing the economic consequences of various types of weather events (Research Question 2).
+
+We conclude our analysis and results with graphical representations of the data and a summary of findings that will allow other researchers to develop further research questions related to the effects of weather events on human and economic health.
 
 
 ## Data Processing
