@@ -607,13 +607,43 @@ str(stormData)</code></pre>
 <h4>Data Processing and Transformations</h4>
 <p>Based on what we observed in the previous section, this data set is bit unwieldy in terms of its width, meaning that we likely have more variables than we need in order to answer the two questions emphasized in the <strong>Synopsis</strong> section. Recall that of particular interest are the <code>EVTYPE</code> and its relationship with indicators of (1) population health and (2) economic consequences. Below is a summary of how each variable has been treated in this analysis and a brief rationale for each respective decision:</p>
 <ul>
-<li><code>STATE__</code> :</li>
-<li><code>BGN_DATE</code> :</li>
-<li><code>BGN_TIME</code> :</li>
-<li><code>TIME_ZONE</code> :</li>
+<li><code>STATE__</code> : We will drop this variable. It is redundant and we do not need a numerical representation of the state of storm events for the present analysis.</li>
+<li><code>BGN_DATE</code> : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.</li>
+<li><code>BGN_TIME</code> : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.</li>
+<li><code>TIME_ZONE</code> : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.</li>
 <li><code>COUNTY</code> :</li>
 <li><code>COUNTYNAME</code>:</li>
-<li><code>STATE</code> : $ EVTYPE : chr “TORNADO” “TORNADO” “TORNADO” “TORNADO” … $ BGN_RANGE : num 0 0 0 0 0 0 0 0 0 0 … $ BGN_AZI : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ BGN_LOCATI: chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ END_DATE : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ END_TIME : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ COUNTY_END: num 0 0 0 0 0 0 0 0 0 0 … $ COUNTYENDN: logi NA NA NA NA NA NA … $ END_RANGE : num 0 0 0 0 0 0 0 0 0 0 … $ END_AZI : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ END_LOCATI: chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ LENGTH : num 14 2 0.1 0 0 1.5 1.5 0 3.3 2.3 … $ WIDTH : num 100 150 123 100 150 177 33 33 100 100 … $ F : int 3 2 2 2 2 2 2 1 3 3 … $ MAG : num 0 0 0 0 0 0 0 0 0 0 … $ FATALITIES: num 0 0 0 0 0 0 0 0 1 0 … $ INJURIES : num 15 0 2 2 2 6 1 0 14 0 … $ PROPDMG : num 25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 … $ PROPDMGEXP: chr “K” “K” “K” “K” … $ CROPDMG : num 0 0 0 0 0 0 0 0 0 0 … $ CROPDMGEXP: chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ WFO : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ STATEOFFIC: chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ ZONENAMES : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ LATITUDE : num 3040 3042 3340 3458 3412 … $ LONGITUDE : num 8812 8755 8742 8626 8642 … $ LATITUDE_E: num 3051 0 0 0 0 … $ LONGITUDE_: num 8806 0 0 0 0 … $ REMARKS : chr &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; … $ REFNUM : num 1 2 3 4 5 6 7 8 9 10 …</li>
+<li><code>STATE</code> : We will retain this variable for our analysis. A within-state comparison may be germane to questions of economic impact.</li>
+<li><code>EVTYPE</code> : We will retain this variable for our analysis. This variable is central to the questions at hand, as both are asked within the framework of of event type.</li>
+<li><code>BGN_RANGE</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>BGN_AZI</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>BGN_LOCATI</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>END_DATE</code> : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.</li>
+<li><code>END_TIME</code> : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.</li>
+<li><code>COUNTY_END</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>COUNTYENDN</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>END_RANGE</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>END_AZI</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>END_LOCATI</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>LENGTH</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>WIDTH</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>F</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>MAG</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>FATALITIES</code>: We will retain this variable for our analysis. Fatalities are an important measure of the impact of storms on population health.</li>
+<li><code>INJURIES</code> : We will retain this variable for our analysis. Injuries are an important measure of the impact of storms on population health.</li>
+<li><code>PROPDMG</code> : We will retain this variable for our analysis. Property damage is an important measure of the economic toll taken by storms.</li>
+<li><code>PROPDMGEXP</code>: We will retain this variable for our analysis. Property damage is an important measure of the economic toll taken by storms. This appears to be an exponentially transformed version of the <code>PROPDMG</code> variable</li>
+<li><code>CROPDMG</code> : We will retain this variable for our analysis. Crop damage is an important measure of the economic toll taken by storms.</li>
+<li><code>CROPDMGEXP</code>: We will retain this variable for our analysis. Crop damage is an important measure of the economic toll taken by storms. This appears to be an exponentially transformed version of the <code>CROPDMG</code> variable</li>
+<li><code>WFO</code> :</li>
+<li><code>STATEOFFIC</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>ZONENAMES</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>LATITUDE</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>LONGITUDE</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>LATITUDE_E</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>LONGITUDE_</code>: We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>REMARKS</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
+<li><code>REFNUM</code> : We will drop this variable. It does not contain information germane to the questions at hand.</li>
 </ul>
 <p>Now that we have summarized how we intend to use (or not use) each variable in the data set, we can transform data appropriately:</p>
 <pre class="data"><code></code></pre>

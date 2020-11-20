@@ -80,44 +80,66 @@ Based on what we observed in the previous section, this data set is bit unwieldy
 - `BGN_DATE`  : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.
 - `BGN_TIME`  : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.
 - `TIME_ZONE` : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.
-- `COUNTY`    : 
-- `COUNTYNAME`: 
+- `COUNTY`    : We will drop this variable. There are no questions pertaining to spatial aspects of the storm events recorded in this data set.
+- `COUNTYNAME`: We will drop this variable. There are no questions pertaining to spatial aspects of the storm events recorded in this data set.
 - `STATE`     : We will retain this variable for our analysis. A within-state comparison may be germane to questions of economic impact.
 - `EVTYPE`    : We will retain this variable for our analysis. This variable is central to the questions at hand, as both are asked within the framework of of event type.
-- `BGN_RANGE` : 
-- `BGN_AZI`   : 
-- `BGN_LOCATI`: 
+- `BGN_RANGE` : We will drop this variable. It does not contain information germane to the questions at hand.
+- `BGN_AZI`   : We will drop this variable. It does not contain information germane to the questions at hand.
+- `BGN_LOCATI`: We will drop this variable. It does not contain information germane to the questions at hand.
 - `END_DATE`  : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.
 - `END_TIME`  : We will drop this variable. There are no questions pertaining to the temporal aspects of the storm events recorded in this data set.
-- `COUNTY_END`: 
-- `COUNTYENDN`: 
-- `END_RANGE` : 
-- `END_AZI`   : 
-- `END_LOCATI`: 
-- `LENGTH`    : 
-- `WIDTH`     : 
-- `F`         : 
-- `MAG`       : 
-- `FATALITIES`: 
-- `INJURIES`  : 
-- `PROPDMG`   : 
-- `PROPDMGEXP`: 
-- `CROPDMG`   : 
-- `CROPDMGEXP`: 
-- `WFO`       : 
-- `STATEOFFIC`: 
-- `ZONENAMES` : 
-- `LATITUDE`  : 
-- `LONGITUDE` : We 
-- `LATITUDE_E`: 
-- `LONGITUDE_`: 
-- `REMARKS`   : 
-- `REFNUM`    : 
+- `COUNTY_END`: We will drop this variable. It does not contain information germane to the questions at hand.
+- `COUNTYENDN`: We will drop this variable. It does not contain information germane to the questions at hand.
+- `END_RANGE` : We will drop this variable. It does not contain information germane to the questions at hand.
+- `END_AZI`   : We will drop this variable. It does not contain information germane to the questions at hand.
+- `END_LOCATI`: We will drop this variable. It does not contain information germane to the questions at hand.
+- `LENGTH`    : We will drop this variable. It does not contain information germane to the questions at hand.
+- `WIDTH`     : We will drop this variable. It does not contain information germane to the questions at hand.
+- `F`         : We will drop this variable. It does not contain information germane to the questions at hand.
+- `MAG`       : We will drop this variable. It does not contain information germane to the questions at hand.
+- `FATALITIES`: We will retain this variable for our analysis. Fatalities are an important measure of the impact of storms on population health.
+- `INJURIES`  : We will retain this variable for our analysis. Injuries are an important measure of the impact of storms on population health.
+- `PROPDMG`   : We will retain this variable for our analysis, as it contains a numerical representation (without an order of magnitude) of the property damage caused by the corresponding storm event. Property damage is an important measure of the economic toll taken by storms.
+- `PROPDMGEXP`: We will retain this variable for our analysis, as it contains an indication of the order of magnitude of the property damage caused by the corresponding storm event (H,K,M B correspond with hundred, thousand, million and billions respectively). Property damage is an important measure of the economic toll taken by storms.
+- `CROPDMG`   : We will retain this variable for our analysis, as it contains a numerical representation (without an order of magnitude) of the crop damage caused by the corresponding storm event. Crop damage is an important measure of the economic toll taken by storms.
+- `CROPDMGEXP`: We will retain this variable for our analysis, as it contains an indication of the order of magnitude of the crop damage caused by the corresponding storm event (H,K,M B correspond with hundred, thousand, million and billions respectively). Crop damage is an important measure of the economic toll taken by storms.
+- `WFO`       : We will drop this variable. It does not contain information germane to the questions at hand.
+- `STATEOFFIC`: We will drop this variable. It does not contain information germane to the questions at hand.
+- `ZONENAMES` : We will drop this variable. It does not contain information germane to the questions at hand.
+- `LATITUDE`  : We will drop this variable. It does not contain information germane to the questions at hand.
+- `LONGITUDE` : We will drop this variable. It does not contain information germane to the questions at hand.
+- `LATITUDE_E`: We will drop this variable. It does not contain information germane to the questions at hand.
+- `LONGITUDE_`: We will drop this variable. It does not contain information germane to the questions at hand.
+- `REMARKS`   : We will drop this variable. It does not contain information germane to the questions at hand.
+- `REFNUM`    : We will drop this variable. It does not contain information germane to the questions at hand.
 
 Now that we have summarized how we intend to use (or not use) each variable in the data set, we can transform data appropriately:
 
-```{Data processing and transformations}
+```{r Data processing and transformations}
+
+# data transformations and column selections
+stormDataFinal <- stormData %>%
+    mutate(
+        propertydamage = ifelse(grepl("H", PROPDMGEXP), PROPDMG * 10^2, # H means hundreds
+                         ifelse(grepl("K", PROPDMGEXP), PROPDMG * 10^3, # K means thousands
+                         ifelse(grepl("M", PROPDMGEXP), PROPDMG * 10^6, # M means millions
+                         ifelse(grepl("B", PROPDMGEXP), PROPDMG * 10^9, # B means billions
+                         PROPDMG)))),                                   # otherwise, no transformation
+        cropdamage   =   ifelse(grepl("H", CROPDMGEXP), CROPDMG * 10^2, # H means hundreds
+                         ifelse(grepl("K", CROPDMGEXP), CROPDMG * 10^3, # K means thousands
+                         ifelse(grepl("M", CROPDMGEXP), CROPDMG * 10^6, # M means millions
+                         ifelse(grepl("B", CROPDMGEXP), CROPDMG * 10^9, # B means billions
+                         CROPDMG))))                                    # otherwise, no transformation
+        ) %>%
+    select(state = STATE, event = EVTYPE, fatalities = FATALITIES,
+           injuries = INJURIES, propertydamage, cropdamage) # take only relevant variables
+
+# visualize the new data set
+head(stormDataFinal, n=20)
 ```
+Now our data looks usable, so we can proceed to analysis and results in order to answer our research questions.
+
 
 
 ## Results
