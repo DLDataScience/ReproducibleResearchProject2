@@ -88,7 +88,7 @@ Based on what we observed in the previous section, this data set is bit unwieldy
 - `COUNTY`    : We will drop this variable. There are no questions pertaining to spatial aspects of the storm events recorded in this data set.
 - `COUNTYNAME`: We will drop this variable. There are no questions pertaining to spatial aspects of the storm events recorded in this data set.
 - `STATE`     : We will retain this variable for our analysis. A within-state comparison may be germane to questions of economic impact.
-- `EVTYPE`    : We will retain this variable for our analysis. This variable is central to the questions at hand, as both are asked within the framework of of event type.
+- `EVTYPE`    : We will retain this variable for our analysis. This variable is central to the questions at hand, as both are asked within the framework of of event type. In order to better aggregate data, we will manipulate this variable to be in all capital letters and to omit all vowels, white space and punctuation. This transformation is performed in hopes of avoiding underestimates of injury, fatality, property damage and crop damage totals for various event types.
 - `BGN_RANGE` : We will drop this variable. It does not contain information germane to the questions at hand.
 - `BGN_AZI`   : We will drop this variable. It does not contain information germane to the questions at hand.
 - `BGN_LOCATI`: We will drop this variable. It does not contain information germane to the questions at hand.
@@ -125,7 +125,8 @@ Now that we have summarized how we intend to use (or not use) each variable in t
 
 # data transformations and column selections
 stormDataFinal <- stormData %>%
-    mutate(
+    mutate( # remove vowels, spaces, punctuation and terminal "S"s
+        event = str_remove_all(str_to_upper(EVTYPE), "(A|E|I|O|U|[:space:]|[:punct:]|(S(?=$)))"), 
         propertydamage = ifelse(grepl("H", PROPDMGEXP), PROPDMG * 10^2, # H means hundreds
                          ifelse(grepl("K", PROPDMGEXP), PROPDMG * 10^3, # K means thousands
                          ifelse(grepl("M", PROPDMGEXP), PROPDMG * 10^6, # M means millions
@@ -137,8 +138,8 @@ stormDataFinal <- stormData %>%
                          ifelse(grepl("B", CROPDMGEXP), CROPDMG * 10^9, # B means billions
                          CROPDMG))))                                    # otherwise, no transformation
         ) %>%
-    select(state = STATE, event = EVTYPE, fatalities = FATALITIES,
-           injuries = INJURIES, propertydamage, cropdamage) # take only relevant variables
+    select(event, EVTYPE, fatalities = FATALITIES, injuries = INJURIES, 
+           propertydamage, cropdamage) # take only relevant variables
 
 # visualize the new data set
 head(stormDataFinal, n=20)
@@ -148,6 +149,26 @@ Now our data looks usable, so we can proceed to analysis and results in order to
 
 
 ## Results
+
+Our first Research Question warrants a closer look at summary statistics on the `fatalities` and `injuries` variables, as they are the two indicators of population health included in the data set. That said, we should point out that there is no use in understanding measures o central tendency, as Research Question 1 asks about the most harmful events across the United States. Thus, we are more interested in aggregate statistics:
+
+```{r Examining summary statistics on population health indicators}
+
+stormDataFinal %>%
+    group_by(event) %>%
+    summarise(across(c('fatalities', 'injuries'), sum, .names = '{.col}_sum')) %>%
+    arrange(desc(fatalities_sum), desc(injuries_sum))
+```
+
+Our second Research Question can be addressed in much the same way, but instead looking at summary statistics on the `` and `` variables, as they are the two indicators of economic impact that we created through an appropriate transformation of the original data set as described in the previous section:
+
+```{r Examining summary statistics on economic consequences}
+
+stormDataFinal %>%
+    group_by(event) %>%
+    summarise(across(c('propertydamage', 'cropdamage'), sum, .names = '{.col}_sum')) %>%
+    arrange(desc(propertydamage_sum + cropdamage_sum))
+```
 
 There should be a section titled Results in which your results are presented.
 You may have other sections in your analysis, but Data Processing and Results are required.
