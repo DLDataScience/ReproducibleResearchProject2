@@ -127,19 +127,19 @@ Now that we have summarized how we intend to use (or not use) each variable in t
 stormDataFinal <- stormData %>%
     mutate( # remove vowels, spaces, punctuation and terminal "S"s
         event = str_remove_all(str_to_upper(EVTYPE), "(A|E|I|O|U|[:space:]|[:punct:]|(S(?=$)))"), 
-        propertydamage = ifelse(grepl("H", PROPDMGEXP), PROPDMG * 10^2, # H means hundreds
+        PropertyDamage = ifelse(grepl("H", PROPDMGEXP), PROPDMG * 10^2, # H means hundreds
                          ifelse(grepl("K", PROPDMGEXP), PROPDMG * 10^3, # K means thousands
                          ifelse(grepl("M", PROPDMGEXP), PROPDMG * 10^6, # M means millions
                          ifelse(grepl("B", PROPDMGEXP), PROPDMG * 10^9, # B means billions
                          PROPDMG)))),                                   # otherwise, no transformation
-        cropdamage   =   ifelse(grepl("H", CROPDMGEXP), CROPDMG * 10^2, # H means hundreds
+        CropDamage   =   ifelse(grepl("H", CROPDMGEXP), CROPDMG * 10^2, # H means hundreds
                          ifelse(grepl("K", CROPDMGEXP), CROPDMG * 10^3, # K means thousands
                          ifelse(grepl("M", CROPDMGEXP), CROPDMG * 10^6, # M means millions
                          ifelse(grepl("B", CROPDMGEXP), CROPDMG * 10^9, # B means billions
                          CROPDMG))))                                    # otherwise, no transformation
         ) %>%
-    select(event, EVTYPE, fatalities = FATALITIES, injuries = INJURIES, 
-           propertydamage, cropdamage) # take only relevant variables
+    select(Event = event, EVTYPE, Fatalities = FATALITIES, Injuries = INJURIES, 
+           PropertyDamage, CropDamage) # take only relevant variables
 
 # visualize the new data set
 head(stormDataFinal, n=20)
@@ -150,28 +150,83 @@ Now our data looks usable, so we can proceed to analysis and results in order to
 
 ## Results
 
-Our first Research Question warrants a closer look at summary statistics on the `fatalities` and `injuries` variables, as they are the two indicators of population health included in the data set. That said, we should point out that there is no use in understanding measures o central tendency, as Research Question 1 asks about the most harmful events across the United States. Thus, we are more interested in aggregate statistics:
+#### Population Health Impact
 
-```{r Examining summary statistics on population health indicators}
+Our first Research Question warrants a closer look at summary statistics on the `fatalities` and `injuries` variables, as they are the two indicators of population health included in the data set. That said, we should point out that there is no use in understanding measures o central tendency, as Research Question 1 asks about the most harmful events across the United States. Thus, we are more interested in aggregate statistics.
 
-stormDataFinal %>%
-    group_by(event) %>%
-    summarise(across(c('fatalities', 'injuries'), sum, .names = '{.col}_sum')) %>%
-    arrange(desc(fatalities_sum), desc(injuries_sum))
+A true analysis would require some verified metric to put `fatalities` and `injuries` into comparable units. DALYs might be appropriate, but without a more robust understanding of what qualifies as an "injury" we will simply resort to a sum of the two variables to serve as a proxy for an aggregate measure of population health impact.
+
+```{r Examining summary statistics on population health indicators, message=FALSE}
+
+# group, aggregate, arrange and select the top 5 most harmful weather events 
+# to population health
+popHealthImpact <- stormDataFinal %>%
+    group_by(Event) %>%
+    summarise(across(c('Fatalities', 'Injuries'), sum)) %>%
+    arrange(desc(Fatalities + Injuries)) %>%
+    head(5)
+
+# display the aggregated data
+popHealthImpact
 ```
 
-Our second Research Question can be addressed in much the same way, but instead looking at summary statistics on the `` and `` variables, as they are the two indicators of economic impact that we created through an appropriate transformation of the original data set as described in the previous section:
+Observing the console output, it seems that the top five weather events with the highest population health toll in descending order are:
 
-```{r Examining summary statistics on economic consequences}
+1. Tornado (`TRND`)
+2. Excessive Heat (`XCSSVHT`)
+3. Thunderstorm Wind (`TSTMWND`)
+4. Flood (`FLD`)
+5. Lightning (`LGHTNNG`)
 
-stormDataFinal %>%
-    group_by(event) %>%
-    summarise(across(c('propertydamage', 'cropdamage'), sum, .names = '{.col}_sum')) %>%
-    arrange(desc(propertydamage_sum + cropdamage_sum))
+We can also display this information graphically:
+
+```{r Plotting population health data}
+
+# gather data for a grouped bar chart
+popHealthImpact %>%
+    gather('Fatalities', 'Injuries', key = Type, value = Count) %>%
+    ggplot(aes(fill=Type, y=Count, x=Event)) +
+        geom_bar(position='dodge', stat='identity') +
+        theme_bw()
+ 
 ```
 
-There should be a section titled Results in which your results are presented.
-You may have other sections in your analysis, but Data Processing and Results are required.
-The analysis document must have at least one figure containing a plot.
-Your analysis must have no more than three figures. Figures may have multiple plots in them (i.e. panel plots), but there cannot be more than three figures total.
-You must show all your code for the work in your analysis document. This may make the document a bit verbose, but that is okay. In general, you should ensure that \color{red}{\verb|echo = TRUE|}echo = TRUE for every code chunk (this is the default setting in knitr).
+
+#### Economic Impact
+
+Our second Research Question can be addressed in much the same way, but instead looking at aggregate statistics on the `propertydamage` and `cropdamage` variables, as they are the two indicators of economic impact that we created through an appropriate transformation of the original data set as described in the previous section. We will sum the aggregate figures in order to get an overall understanding of the economic impact in dollars of each type of weather event:
+
+```{r Examining summary statistics on economic consequences, message=FALSE}
+
+# group, aggregate, arrange and select the top 5 most economically 
+# harmful weather events
+economicImpact <- stormDataFinal %>%
+    group_by(Event) %>%
+    summarise(across(c('PropertyDamage', 'CropDamage'), sum, .names = '{.col}')) %>%
+    arrange(desc(PropertyDamage + CropDamage)) %>%
+    head(5)
+
+# display the aggregated data
+economicImpact
+```
+
+Observing the output of our code, it seems that the top five most economically harmful weather events in descending order are:
+
+1. Flood (`FLD`)
+2. Hurricane/Typhoon (`HRRCNTYPHN`)
+3. Tornado (`TRND`)
+4. Storm Surge(`STRMSRG`)
+5. Hail (`HL`)
+
+We can also display this information graphically:
+
+```{r Plotting economic impact data}
+
+# gather data for a grouped bar chart
+economicImpact %>%
+    gather('PropertyDamage', 'CropDamage', key = DamageType, value = Count) %>%
+    ggplot(aes(fill=DamageType, y=Count, x=Event)) +
+        geom_bar(position='dodge', stat='identity') +
+        theme_bw()
+ 
+```
